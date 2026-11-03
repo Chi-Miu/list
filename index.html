@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>曲目一覧 - Music Library</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+    
+    body {
+      font-family: 'Zen Kaku Gothic New', 'Plus Jakarta Sans', sans-serif;
+      background-color: #080a10;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+
+    /* ネオン背景グラデーションオーブ */
+    .glow-orb-1 {
+      position: fixed;
+      top: -10%;
+      left: 15%;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(0, 0, 0, 0) 70%);
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-orb-2 {
+      position: fixed;
+      bottom: -10%;
+      right: 10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* グラスモフィズム基調 */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .glass-input {
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-input:focus {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: rgba(129, 140, 248, 0.6);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+    }
+
+    /* 行のホバーエフェクト */
+    .table-row-hover {
+      transition: all 0.2s ease;
+    }
+    .table-row-hover:hover {
+      background: rgba(255, 255, 255, 0.04);
+      transform: scale(1.002);
+    }
+
+    /* フィルターボタンのアクティブ状態 */
+    .filter-btn {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .filter-btn.active {
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+      border-color: transparent;
+    }
+
+    /* ネオンバッジ */
+    .badge-glow-blue {
+      background: rgba(59, 130, 246, 0.1);
+      color: #60a5fa;
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.15);
+    }
+    .badge-glow-emerald {
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.15);
+    }
+    .badge-glow-purple {
+      background: rgba(168, 85, 247, 0.1);
+      color: #c084fc;
+      border: 1px solid rgba(192, 132, 252, 0.3);
+      box-shadow: 0 0 8px rgba(168, 85, 247, 0.15);
+    }
+    .badge-glow-amber {
+      background: rgba(245, 158, 11, 0.1);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.15);
+    }
+
+    /* スクロールバーカスタム */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #080a10;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+  </style>
+</head>
+<body class="min-h-screen relative pb-16 selection:bg-purple-500 selection:text-white">
+
+  <!-- 背景の発光オーブ -->
+  <div class="glow-orb-1"></div>
+  <div class="glow-orb-2"></div>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-10 relative z-10">
+    
+    <!-- ヘッダー -->
+    <header class="mb-8 border-b border-slate-800/80 pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold tracking-wider uppercase mb-2">
+          <i class="fas fa-compact-disc animate-spin" style="animation-duration: 8s;"></i> Cyber Repertoire
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+          演奏曲目ライブラリ
+        </h1>
+        <p class="text-slate-400 text-xs sm:text-sm mt-1">登録されているアンサンブル・オーケストラ曲目カタログ</p>
+      </div>
+
+      <!-- カウント表示バッジ -->
+      <div id="stats" class="glass-card px-4 py-2.5 rounded-xl border border-indigo-500/30 flex items-center gap-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-ping"></span>
+        <span class="text-xs text-slate-400 font-medium">ヒット件数:</span>
+        <span class="text-lg font-bold font-mono text-indigo-400" id="total-count">0</span>
+        <span class="text-xs text-slate-500">/ 42 件</span>
+      </div>
+    </header>
+
+    <!-- 検索 & フィルターコントロールバー -->
+    <section class="glass-card p-4 sm:p-5 rounded-2xl mb-6 flex flex-col lg:flex-row gap-4 justify-between items-center">
+      <!-- 検索窓 -->
+      <div class="relative w-full lg:w-96">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <i class="fas fa-search text-xs"></i>
+        </div>
+        <input type="text" id="search-input" placeholder="曲名や編成キーワードで検索..." 
+          class="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none">
+      </div>
+
+      <!-- カテゴリフィルターボタン -->
+      <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-start lg:justify-end" id="filter-buttons">
+        <button data-filter="all" class="filter-btn active glass-card text-slate-300 hover:text-white border border-slate-700/60 px-3.5 py-2 rounded-xl text-xs font-semibold">すべて</button>
+        <button data-filter="四重奏" class="filter-btn glass-card text-slate-300 hover:text-white border border-slate-700/60 px-3.5 py-2 rounded-xl text-xs font-semibold">四重奏</button>
+        <button data-filter="弦楽" class="filter-btn glass-card text-slate-300 hover:text-white border border-slate-700/60 px-3.5 py-2 rounded-xl text-xs font-semibold">弦楽合奏</button>
+        <button data-filter="特殊" class="filter-btn glass-card text-slate-300 hover:text-white border border-slate-700/60 px-3.5 py-2 rounded-xl text-xs font-semibold">特殊編成</button>
+        <button data-filter="その他" class="filter-btn glass-card text-slate-300 hover:text-white border border-slate-700/60 px-3.5 py-2 rounded-xl text-xs font-semibold">その他</button>
+      </div>
+    </section>
+
+    <!-- 曲目リストテーブル -->
+    <main class="glass-card rounded-2xl border border-slate-800 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-900/80 text-slate-400 text-xs font-mono uppercase tracking-wider border-b border-slate-800/80">
+              <th class="py-4 px-4 sm:px-6 w-16 text-center">#</th>
+              <th class="py-4 px-4 sm:px-6 font-semibold">曲名</th>
+              <th class="py-4 px-4 sm:px-6 font-semibold">編成</th>
+            </tr>
+          </thead>
+          <tbody id="music-table-body" class="divide-y divide-slate-800/50 text-sm">
+            <!-- JavaScriptで動的生成 -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 該当結果なし時 -->
+      <div id="no-results" class="hidden py-16 text-center text-slate-500">
+        <div class="w-12 h-12 rounded-full bg-slate-800/80 flex items-center justify-center mx-auto mb-3 text-slate-400">
+          <i class="fas fa-folder-open text-xl"></i>
+        </div>
+        <p class="text-sm font-medium">該当する曲目が見つかりません</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const musicData = [
+      { id: 1, name: "主よ人の望みの喜びよ", category: "四重奏" },
+      { id: 2, name: "オンブラ マイ フ", category: "四重奏" },
+      { id: 3, name: "アヴェ ヴェルム コルプス", category: "四重奏" },
+      { id: 4, name: "リベルティメント", category: "弦楽合奏" },
+      { id: 5, name: "さんぽ", category: "四重奏" },
+      { id: 6, name: "名探偵コナンのテーマ", category: "四重奏" },
+      { id: 7, name: "翼をください", category: "四重奏" },
+      { id: 8, name: "あわてんぼうのサンタクロース", category: "四重奏" },
+      { id: 9, name: "クリスマスハイライト", category: "弦楽" },
+      { id: 10, name: "ひまわり", category: "四重奏" },
+      { id: 11, name: "ウィーンわが夢の街", category: "四重奏" },
+      { id: 12, name: "津軽海峡冬景色", category: "四重奏、合奏版（管楽器入り）" },
+      { id: 13, name: "川の流れのように", category: "四重奏" },
+      { id: 14, name: "北国の春", category: "四重奏、合奏版（ピアノ付き）" },
+      { id: 15, name: "チャルダッシュ", category: "特殊編成 Solo Vln + Quartet" },
+      { id: 16, name: "高校三年生", category: "特殊編成 1Vln 1Br 2Vcl 1Cb" },
+      { id: 17, name: "小組曲", category: "弦楽合奏" },
+      { id: 18, name: "ニューシネマパラダイス", category: "四重奏" },
+      { id: 19, name: "アンダンテフェスティーヴォ", category: "弦楽合奏" },
+      { id: 20, name: "ジ・エンターテイナー", category: "四重奏" },
+      { id: 21, name: "アシタカとサン", category: "特殊編成 Pno. Ob. Cl. Strings" },
+      { id: 22, name: "海の見える街", category: "特殊編成 Ob. Cl. Strings" },
+      { id: 23, name: "崖の上のポニョ", category: "四重奏" },
+      { id: 24, name: "美女と野獣", category: "弦楽合奏" },
+      { id: 25, name: "夏のメドレー", category: "特殊編成 Solo Vln + Strings" },
+      { id: 26, name: "浜辺の歌", category: "四重奏" },
+      { id: 27, name: "見上げてごらん夜の星を", category: "三重奏、四重奏" },
+      { id: 28, name: "星に願いを", category: "四重奏" },
+      { id: 29, name: "ジングルベル", category: "四重奏" },
+      { id: 30, name: "諸人こぞりて", category: "四重奏" },
+      { id: 31, name: "ふるさと", category: "四重奏" },
+      { id: 32, name: "ディヴェルティメント", category: "四重奏" },
+      { id: 33, name: "くちなしの花", category: "四重奏" },
+      { id: 34, name: "星影のワルツ", category: "四重奏" },
+      { id: 35, name: "いつも何度でも", category: "四重奏" },
+      { id: 36, name: "ラ・クンパルシータ", category: "四重奏" },
+      { id: 37, name: "ジェラシー", category: "四重奏" },
+      { id: 38, name: "リベルタンゴ", category: "四重奏" },
+      { id: 39, name: "太陽がいっぱい", category: "四重奏" },
+      { id: 40, name: "小さな世界", category: "四重奏" },
+      { id: 41, name: "青い山脈", category: "四重奏" },
+      { id: 42, name: "人生のメリーゴーランド", category: "四重奏" }
+    ];
+
+    function getBadgeClass(category) {
+      if (category.includes("四重奏") && !category.includes("特殊") && !category.includes("合奏版")) {
+        return "badge-glow-blue";
+      } else if (category.includes("弦楽") || category.includes("合奏")) {
+        return "badge-glow-emerald";
+      } else if (category.includes("特殊")) {
+        return "badge-glow-purple";
+      } else {
+        return "badge-glow-amber";
+      }
+    }
+
+    let currentFilter = 'all';
+    let searchQuery = '';
+
+    function renderTable() {
+      const tbody = document.getElementById('music-table-body');
+      const noResults = document.getElementById('no-results');
+      tbody.innerHTML = '';
+
+      const filtered = musicData.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              item.category.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        let matchesFilter = true;
+        if (currentFilter === '四重奏') {
+          matchesFilter = item.category === '四重奏';
+        } else if (currentFilter === '弦楽') {
+          matchesFilter = item.category.includes('弦楽');
+        } else if (currentFilter === '特殊') {
+          matchesFilter = item.category.includes('特殊');
+        } else if (currentFilter === 'その他') {
+          matchesFilter = item.category !== '四重奏' && !item.category.includes('弦楽') && !item.category.includes('特殊');
+        }
+
+        return matchesSearch && matchesFilter;
+      });
+
+      document.getElementById('total-count').textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        noResults.classList.remove('hidden');
+      } else {
+        noResults.classList.add('hidden');
+        filtered.forEach((item) => {
+          const tr = document.createElement('tr');
+          tr.className = "table-row-hover";
+          tr.innerHTML = `
+            <td class="py-3.5 px-4 sm:px-6 text-center text-xs text-slate-500 font-mono">${String(item.id).padStart(2, '0')}</td>
+            <td class="py-3.5 px-4 sm:px-6 font-medium text-slate-200">${item.name}</td>
+            <td class="py-3.5 px-4 sm:px-6">
+              <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold ${getBadgeClass(item.category)}">
+                ${item.category}
+              </span>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    // イベントリスナー設定
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderTable();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.remove('active');
+        });
+        
+        btn.classList.add('active');
+
+        currentFilter = btn.getAttribute('data-filter');
+        renderTable();
+      });
+    });
+
+    // 初期表示
+    renderTable();
+  </script>
+</body>
+</html>
